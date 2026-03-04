@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Ru Medya — Dashboard</title>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+:root{--bg:#0a0a0a;--bg2:#111;--surface:#161616;--surface2:#1c1c1c;--border:rgba(255,255,255,0.08);--text:#f0f0f0;--muted:#888;--gold:#a8b0c0;--gold2:#dde2ee;--accent:#3b82f6;--green:#22c55e;--red:#ef4444;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;min-height:100vh;display:flex;}
+.sidebar{width:240px;min-height:100vh;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;z-index:100;}
+.sb-logo{padding:1.5rem;border-bottom:1px solid var(--border);}
+.sb-logo-text{font-size:1.1rem;font-weight:700;letter-spacing:.08em;color:var(--gold2);}
+.sb-logo-sub{font-size:.7rem;color:var(--muted);margin-top:.2rem;}
+.sb-nav{flex:1;padding:1rem 0;overflow-y:auto;}
+.sb-nav a{display:flex;align-items:center;gap:.75rem;padding:.65rem 1.2rem;font-size:.82rem;color:var(--muted);text-decoration:none;transition:color .2s,background .2s;cursor:pointer;border-left:2px solid transparent;}
+.sb-nav a:hover{color:var(--text);background:rgba(255,255,255,0.03);}
+.sb-nav a.active{color:var(--gold2);background:rgba(168,176,192,0.07);border-left-color:var(--gold);}
+.sb-section{font-size:.65rem;font-weight:600;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;padding:.8rem 1.2rem .3rem;margin-top:.5rem;}
+.sb-footer{padding:1rem 1.2rem;border-top:1px solid var(--border);}
+.sb-footer a{font-size:.75rem;color:var(--muted);text-decoration:none;}
+.sb-footer a:hover{color:var(--gold);}
+.main{margin-left:240px;flex:1;padding:2rem;min-height:100vh;}
+.page{display:none;}
+.page.active{display:block;}
+.page-header{margin-bottom:2rem;}
+.page-title{font-size:1.4rem;font-weight:700;}
+.page-sub{font-size:.82rem;color:var(--muted);margin-top:.3rem;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem;margin-bottom:1.2rem;}
+.card-title{font-size:.78rem;font-weight:600;color:var(--gold);letter-spacing:.08em;text-transform:uppercase;margin-bottom:1.2rem;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.form-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;}
+.form-group{display:flex;flex-direction:column;gap:.4rem;}
+.form-group.full{grid-column:1/-1;}
+label{font-size:.72rem;font-weight:600;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;}
+input,textarea,select{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:.65rem .9rem;color:var(--text);font-family:inherit;font-size:.85rem;outline:none;transition:border-color .2s;width:100%;}
+input:focus,textarea:focus,select:focus{border-color:var(--gold);}
+textarea{resize:vertical;min-height:80px;}
+.btn{padding:.6rem 1.4rem;border-radius:8px;font-size:.82rem;font-weight:600;cursor:pointer;border:none;transition:opacity .2s,transform .2s;font-family:inherit;}
+.btn:hover{opacity:.85;transform:translateY(-1px);}
+.btn-primary{background:var(--gold);color:#000;}
+.btn-danger{background:var(--red);color:#fff;}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--muted);}
+.btn-ghost:hover{color:var(--text);border-color:var(--gold);}
+.btn-sm{padding:.4rem 1rem;font-size:.75rem;}
+.btn-success{background:var(--green);color:#fff;}
+.stats-overview{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem;}
+.stat-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.2rem;text-align:center;}
+.stat-box-num{font-size:1.8rem;font-weight:700;color:var(--gold2);}
+.stat-box-lbl{font-size:.72rem;color:var(--muted);margin-top:.3rem;text-transform:uppercase;letter-spacing:.05em;}
+.list-item{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:1rem 1.2rem;margin-bottom:.7rem;display:flex;align-items:center;gap:1rem;}
+.list-item-info{flex:1;}
+.list-item-title{font-size:.88rem;font-weight:600;}
+.list-item-sub{font-size:.75rem;color:var(--muted);margin-top:.2rem;}
+.list-item-actions{display:flex;gap:.5rem;flex-shrink:0;}
+.acc-editor{border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:1rem;}
+.acc-editor-head{padding:1rem 1.2rem;background:var(--surface2);display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;}
+.acc-editor-head:hover{background:#222;}
+.acc-editor-title{font-size:.88rem;font-weight:600;}
+.acc-editor-body{padding:1.2rem;border-top:1px solid var(--border);display:none;}
+.acc-editor-body.open{display:block;}
+.subcard{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:1rem;margin-bottom:.7rem;}
+.subcard-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem;}
+.subcard-title{font-size:.78rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
+.toast{position:fixed;bottom:2rem;right:2rem;background:var(--green);color:#fff;padding:.75rem 1.4rem;border-radius:10px;font-size:.82rem;font-weight:600;z-index:9999;transform:translateY(100px);opacity:0;transition:all .3s;}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast.error{background:var(--red);}
+#db-bar{position:fixed;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--gold),var(--accent));background-size:200%;animation:shimmer 1.2s linear infinite;z-index:9999;display:none;}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:none;align-items:center;justify-content:center;}
+.modal-bg.open{display:flex;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:2rem;width:100%;max-width:480px;}
+.modal-title{font-size:1rem;font-weight:700;margin-bottom:1.2rem;color:var(--gold2);}
+.modal-footer{display:flex;gap:.7rem;justify-content:flex-end;margin-top:1.2rem;}
+.divider{height:1px;background:var(--border);margin:1.2rem 0;}
+@media(max-width:640px){.sidebar{display:none;}.main{margin-left:0;}.stats-overview{grid-template-columns:1fr 1fr;}.form-grid,.form-grid-3{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div id="db-bar"></div>
+
+<nav class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-text">RU MEDYA</div>
+    <div class="sb-logo-sub">İçerik Yönetim Paneli</div>
+  </div>
+  <div class="sb-nav">
+    <a onclick="showPage('ozet')" id="nav-ozet" class="active">📊 Genel Bakış</a>
+    <div class="sb-section">Site İçeriği</div>
+    <a onclick="showPage('hero')" id="nav-hero">🏠 Hero</a>
+    <a onclick="showPage('hakkimizda')" id="nav-hakkimizda">🏢 Hakkımızda</a>
+    <a onclick="showPage('stats')" id="nav-stats">📈 İstatistikler</a>
+    <a onclick="showPage('hizmetler')" id="nav-hizmetler">⚙️ Hizmetler</a>
+    <a onclick="showPage('referanslar')" id="nav-referanslar">⭐ Referanslar</a>
+    <div class="sb-section">İletişim & Sosyal</div>
+    <a onclick="showPage('iletisim')" id="nav-iletisim">📞 İletişim</a>
+    <a onclick="showPage('sosyal')" id="nav-sosyal">📱 Sosyal Medya</a>
+    <a onclick="showPage('footer')" id="nav-footer">🔻 Footer</a>
+  </div>
+  <div class="sb-footer">
+    <a href="https://rumedya.com.tr" target="_blank">🌐 Siteyi Görüntüle →</a>
+  </div>
+</nav>
+
+<main class="main">
+
+  <!-- GENEL BAKIŞ -->
+  <div class="page active" id="page-ozet">
+    <div class="page-header"><div class="page-title">Genel Bakış</div><div class="page-sub">Ru Medya içerik yönetim paneline hoş geldiniz.</div></div>
+    <div class="stats-overview">
+      <div class="stat-box"><div class="stat-box-num" id="oz-refs">—</div><div class="stat-box-lbl">Referans</div></div>
+      <div class="stat-box"><div class="stat-box-num">4</div><div class="stat-box-lbl">Hizmet Kategorisi</div></div>
+      <div class="stat-box"><div class="stat-box-num" id="oz-musteri">—</div><div class="stat-box-lbl">Müşteri (Site)</div></div>
+      <div class="stat-box"><div class="stat-box-num" id="oz-proje">—</div><div class="stat-box-lbl">Proje (Site)</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">⚡ Hızlı Erişim</div>
+      <div style="display:flex;flex-wrap:wrap;gap:.7rem;">
+        <button class="btn btn-ghost" onclick="showPage('hero')">Hero Düzenle</button>
+        <button class="btn btn-ghost" onclick="showPage('stats')">İstatistik Güncelle</button>
+        <button class="btn btn-ghost" onclick="showPage('referanslar')">Referans Ekle</button>
+        <button class="btn btn-ghost" onclick="showPage('iletisim')">İletişim Düzenle</button>
+        <button class="btn btn-ghost" onclick="showPage('hizmetler')">Hizmetleri Düzenle</button>
+        <button class="btn btn-ghost" onclick="showPage('sosyal')">Sosyal Medya</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">ℹ️ Kullanım</div>
+      <p style="font-size:.82rem;color:var(--muted);line-height:1.7;">Soldaki menüden düzenlemek istediğiniz bölümü seçin, değişiklikleri yapın ve <strong style="color:var(--gold)">Kaydet</strong> butonuna basın. Değişiklikler veritabanına kaydedilir ve site otomatik güncellenir.</p>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <div class="page" id="page-hero">
+    <div class="page-header"><div class="page-title">Hero Bölümü</div><div class="page-sub">Ana sayfa hero içerikleri</div></div>
+    <div class="card">
+      <div class="card-title">🏠 Hero İçeriği</div>
+      <div class="form-grid">
+        <div class="form-group"><label>Başlık 1. Satır</label><input id="h-line1" placeholder="Hayalden"></div>
+        <div class="form-group"><label>Başlık 2. Satır</label><input id="h-line2" placeholder="Gerçeğe"></div>
+        <div class="form-group full"><label>Alt Başlık</label><input id="h-sub" placeholder="Reklam, yazılım..."></div>
+        <div class="form-group"><label>1. Buton Metni</label><input id="h-btn1" placeholder="Hizmetlerimizi Keşfet"></div>
+        <div class="form-group"><label>1. Buton Linki</label><input id="h-btn1-href" placeholder="#services"></div>
+        <div class="form-group"><label>2. Buton Metni</label><input id="h-btn2" placeholder="Bize Ulaşın"></div>
+        <div class="form-group"><label>2. Buton Linki</label><input id="h-btn2-href" placeholder="#contact"></div>
+        <div class="form-group"><label>Eyebrow (üst metin)</label><input id="h-eyebrow" placeholder="Est. 2016"></div>
+        <div class="form-group"><label>Scroll Metni</label><input id="h-scroll" placeholder="Keşfet"></div>
+      </div>
+      <div class="divider"></div>
+      <button class="btn btn-primary" onclick="saveHero()">💾 Kaydet</button>
+    </div>
+  </div>
+
+  <!-- HAKKIMIZDA -->
+  <div class="page" id="page-hakkimizda">
+    <div class="page-header"><div class="page-title">Hakkımızda</div><div class="page-sub">Şirket tanıtım bölümü</div></div>
+    <div class="card">
+      <div class="card-title">🏢 İçerik</div>
+      <div class="form-grid">
+        <div class="form-group"><label>Bölüm Etiketi</label><input id="hk-stag" placeholder="Hakkımızda"></div>
+        <div class="form-group"><label>Başlık</label><input id="hk-sh" placeholder="Kreatif Güç."></div>
+        <div class="form-group full"><label>Açıklama</label><textarea id="hk-sp"></textarea></div>
+        <div class="form-group full"><label>Alıntı / Slogan</label><input id="hk-quote" placeholder="Yeniliklerle sınırları AŞIN!"></div>
+        <div class="form-group"><label>Sektör</label><input id="hk-sektor" placeholder="Medya, Reklam & Yazılım Ajansı"></div>
+        <div class="form-group"><label>Hizmet Alanları</label><input id="hk-hizmet" placeholder="10+ Farklı Hizmet"></div>
+        <div class="form-group"><label>Ekip</label><input id="hk-ekip" placeholder="25+ Uzman"></div>
+        <div class="form-group"><label>Web</label><input id="hk-web" placeholder="rumedya.com.tr"></div>
+      </div>
+      <div class="divider"></div>
+      <button class="btn btn-primary" onclick="saveHakkimizda()">💾 Kaydet</button>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="page" id="page-stats">
+    <div class="page-header"><div class="page-title">İstatistikler</div><div class="page-sub">Sayı bandı ve kayan metin</div></div>
+    <div class="card">
+      <div class="card-title">📈 Sayı Bandı</div>
+      <div class="form-grid">
+        <div class="form-group"><label>1. Sayı</label><input type="number" id="s-v1" placeholder="1000"></div>
+        <div class="form-group"><label>1. Etiket</label><input id="s-l1" placeholder="Memnun Müşteri"></div>
+        <div class="form-group"><label>2. Sayı</label><input type="number" id="s-v2" placeholder="4000"></div>
+        <div class="form-group"><label>2. Etiket</label><input id="s-l2" placeholder="Tamamlanan Proje"></div>
+        <div class="form-group"><label>3. Sayı</label><input type="number" id="s-v3" placeholder="25"></div>
+        <div class="form-group"><label>3. Etiket</label><input id="s-l3" placeholder="Takım Üyesi"></div>
+      </div>
+      <div class="divider"></div>
+      <div class="form-group"><label>Kayan Metinler (· ile ayırın)</label><textarea id="s-marquee" style="min-height:80px;"></textarea></div>
+      <div class="divider"></div>
+      <button class="btn btn-primary" onclick="saveStats()">💾 Kaydet</button>
+    </div>
+  </div>
+
+  <!-- HİZMETLER -->
+  <div class="page" id="page-hizmetler">
+    <div class="page-header"><div class="page-title">Hizmetler</div><div class="page-sub">Accordion kategoriler ve alt hizmetler</div></div>
+    <div id="hizmet-list"></div>
+    <button class="btn btn-primary" onclick="saveHizmetler()">💾 Tüm Hizmetleri Kaydet</button>
+  </div>
+
+  <!-- REFERANSLAR -->
+  <div class="page" id="page-referanslar">
+    <div class="page-header"><div class="page-title">Referanslar</div><div class="page-sub">Müşteri ve referans listesi</div></div>
+    <div class="card">
+      <div class="card-title">➕ Referans Ekle</div>
+      <div class="form-grid">
+        <div class="form-group"><label>Şirket / Kurum Adı</label><input id="ref-name-new" placeholder="Türk Telekom"></div>
+        <div class="form-group"><label>Sektör</label><input id="ref-sector-new" placeholder="Teknoloji & Telekomünikasyon"></div>
+      </div>
+      <div style="margin-top:1rem;"><button class="btn btn-success btn-sm" onclick="addRef()">+ Ekle</button></div>
+    </div>
+    <div class="card">
+      <div class="card-title">📋 Liste</div>
+      <div id="ref-list"></div>
+      <div class="divider"></div>
+      <button class="btn btn-primary" onclick="saveReferanslar()">💾 Kaydet</button>
+    </div>
+  </div>
+
+  <!-- İLETİŞİM -->
+  <div class="page" id="page-iletisim">
+    <div class="page-header"><div class="page-title">İletişim</div><div class="page-sub">İletişim bölümü bilgileri</div></div>
+    <div class="card">
+      <div class="card-title">📞 İletişim Bilgileri</div>
+      <div class="form-grid">
+        <div class="form-group"><label>Bölüm Etiketi</label><input id="il-stag" placeholder="İletişim"></div>
+        <div class="form-group"><label>Başlık</label><input id="il-sh" placeholder="Hadi Birlikte Başaralım."></div>
+        <div class="form-group full"><label>Alt Metin</label><textarea id="il-sp"></textarea></div>
+        <div class="form-group"><label>Telefon (görünen)</label><input id="il-tel-val" placeholder="+90 545 552 53 24"></div>
+        <div class="form-group"><label>Telefon (href)</label><input id="il-tel-href" placeholder="+905455525324"></div>
+        <div class="form-group full"><label>E-Posta</label><input id="il-email" placeholder="iletisim@rumedya.com.tr"></div>
+        <div class="form-group full"><label>Adres Satır 1</label><input id="il-adres1" placeholder="Emniyet Mahallesi, Hipodrom Caddesi"></div>
+        <div class="form-group full"><label>Adres Satır 2</label><input id="il-adres2" placeholder="No:9/17 İç Kapı: 98"></div>
+        <div class="form-group full"><label>Adres Satır 3</label><input id="il-adres3" placeholder="M3 Blok — Yenimahalle, Ankara"></div>
+      </div>
+      <div class="divider"></div>
+      <button class="btn btn-primary" onclick="saveIletisim()">💾 Kaydet</button>
+    </div>
+  </div>
+
+  <!-- SOSYAL -->
+  <div class="page" id="page-sosyal">
+    <div class="page-header"><div class="page-title">Sosyal Medya</div><div class="page-sub">Sosyal medya linkleri</div></div>
+    <div class="card">
+      <div class="card-title">📱 Linkler</div>
+      <div class="form-grid">
+        <div class="form-group"><label>Instagram URL</label><input id="soc-ig" placeholder="https://instagram.com/rumedya"></div>
+        <div class="form-group"><label>Instagram Kullanıcı Adı</label><input id="soc-ig-val" placeholder="@rumedya"></div>
+        <div class="form-group"><label>X (Twitter) URL</label><input id="soc-tw" placeholder="https://twitter.com/MedyaRu"></div>
+        <div class="form-group"><label>X Kullanıcı Adı</label><input id="soc-tw-val" placeholder="@MedyaRu"></div>
+        <div class="form-group"><label>Facebook URL</label><input id="soc-fb" placeholder="https://facebook.com/..."></div>
+        <div class="form-group"><label>Facebook Görünen Ad</label><input id="soc-fb-val" placeholder="Ru Medya"></div>
+        <div class="form-group"><label>LinkedIn (opsiyonel)</label><input id="soc-li" placeholder="https://linkedin.com/..."></div>
+        <div class="form-group"><label>YouTube (opsiyonel)</label><input id="soc-yt" placeholder="https://youtube.com/..."></div>
+      </div>
+      <div class="divider"></div>
+      <button class="btn btn-primary" onclick="saveSosyal()">💾 Kaydet</button>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="page" id="page-footer">
+    <div class="page-header"><div class="page-title">Footer</div><div class="page-sub">Alt bilgi alanı</div></div>
+    <div class="card">
+      <div class="card-title">🔻 Footer İçeriği</div>
+      <div class="form-grid">
+        <div class="form-group"><label>Marka Adı</label><input id="ft-brand" placeholder="RU MEDYA"></div>
+        <div class="form-group"><label>Tagline</label><input id="ft-tagline" placeholder="Hayalden Gerçeğe."></div>
+        <div class="form-group full"><label>Copyright</label><input id="ft-copy" placeholder="© 2025 Ru Medya. Tüm hakları saklıdır."></div>
+        <div class="form-group"><label>Konum</label><input id="ft-konum" placeholder="Yenimahalle, Ankara"></div>
+      </div>
+      <div class="divider"></div>
+      <button class="btn btn-primary" onclick="saveFooter()">💾 Kaydet</button>
+    </div>
+  </div>
+
+</main>
+
+<div class="modal-bg" id="modal">
+  <div class="modal">
+    <div class="modal-title" id="modal-title">Düzenle</div>
+    <div id="modal-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost btn-sm" onclick="closeModal()">İptal</button>
+      <button class="btn btn-primary btn-sm" id="modal-save-btn">Kaydet</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPABASE_URL='https://fxycjhzseywphohsrnvy.supabase.co';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ4eWNqaHpzZXl3cGhvaHNybnZ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2MzAzNzAsImV4cCI6MjA4ODIwNjM3MH0.JpXxfVra83mbfVXpWZDuBQmJxHxtZ25IF9z6fFE5xsI';
+
+const DB={
+  async get(k){try{const r=await fetch(`${SUPABASE_URL}/rest/v1/ru_data?key=eq.${k}&select=value`,{headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}});const d=await r.json();if(d&&d[0]&&d[0].value&&d[0].value!=='null')return JSON.parse(d[0].value);return null;}catch(e){return null;}},
+  async set(k,v){try{await fetch(`${SUPABASE_URL}/rest/v1/ru_data`,{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'},body:JSON.stringify({key:k,value:JSON.stringify(v),updated_at:new Date().toISOString()})});}catch(e){}}
+};
+
+const S={
+  hero:{line1:'Hayalden',line2:'Gerçeğe',sub:'Reklam, yazılım, organizasyon ve dijital pazarlamada sınırları birlikte aşıyoruz.',btn1:'Hizmetlerimizi Keşfet',btn1href:'#services',btn2:'Bize Ulaşın',btn2href:'#contact',eyebrow:'Est. 2016',scroll:'Keşfet'},
+  hakkimizda:{stag:'Hakkımızda',sh:'Kreatif Güç.',sp:'Ru Medya olarak markanız için etkili bir medya ve reklam partneri oluyoruz.',quote:'Yeniliklerle sınırları AŞIN!',sektor:'Medya, Reklam & Yazılım Ajansı',hizmet:'10+ Farklı Hizmet',ekip:'25+ Uzman',web:'rumedya.com.tr'},
+  stats:{v1:1000,l1:'Memnun Müşteri',v2:4000,l2:'Tamamlanan Proje',v3:25,l3:'Takım Üyesi',marquee:'Yazılım Geliştirme · Tanıtım Hizmetleri · Reklam Hizmetleri · Sosyal Medya Yönetimi · Organizasyon & Canlı Yayın · Dijital Pazarlama'},
+  hizmetler:[
+    {id:'h1',title:'Yazılım',pitch:'Dijital çağda rekabette öne geçmek için doğru yazılım altyapısı bir lüks değil, zorunluluktur.',subhizmetler:[{icon:'🌐',title:'Web Geliştirme',desc:'Hızlı, modern ve dönüşüm odaklı web siteleri.'},{icon:'📱',title:'Mobil Uygulama',desc:'iOS ve Android uygulamalar.'},{icon:'⚙️',title:'Kurumsal Yazılım',desc:'ERP ve iş süreçleri yazılımı.'},{icon:'🤖',title:'Otomasyon',desc:'Tekrarlayan süreçleri otomatize edin.'},{icon:'🛒',title:'E-Ticaret',desc:'Satışlarınızı 7/24 katlayın.'}]},
+    {id:'h2',title:'Tanıtım',pitch:'İlk izlenim her şeydir. Markanızın hikayesini doğru görsel dil ile anlatıyoruz.',subhizmetler:[{icon:'🎨',title:'Grafik Tasarım',desc:'Afiş, broşür ve görsel materyaller.'},{icon:'🎬',title:'Video Prodüksiyon',desc:'Tanıtım filmleri ve reklam spotları.'},{icon:'📸',title:'Fotoğraf Çekimi',desc:'Ürün ve kurumsal fotoğrafçılık.'},{icon:'🆔',title:'Kurumsal Kimlik',desc:'Logo, renk paleti, marka kılavuzu.'},{icon:'🎥',title:'Belgesel',desc:'Kurumsal tanıtım filmleri.'},{icon:'📄',title:'Dijital İçerik',desc:'Sosyal medya içerikleri.'}]},
+    {id:'h3',title:'Organizasyon',pitch:'Küçük etkinliklerden büyük organizasyonlara kadar her ölçekte profesyonel hizmet.',subhizmetler:[{icon:'🎪',title:'Etkinlik Yönetimi',desc:'Uçtan uca organizasyon.'},{icon:'📡',title:'Canlı Yayın',desc:'Profesyonel streaming.'},{icon:'🎤',title:'Kongre & Konferans',desc:'Büyük ölçekli organizasyonlar.'},{icon:'🏆',title:'Ödül Törenleri',desc:'Gala ve ödül geceleri.'}]},
+    {id:'h4',title:'Promosyon',pitch:'Markanızı doğru hedef kitleye ulaştıran güçlü promosyon çözümleri.',subhizmetler:[{icon:'📦',title:'Promosyon Ürünleri',desc:'Markalı hediyeler.'},{icon:'📋',title:'Katalog & Broşür',desc:'Baskı ve dijital kataloglar.'},{icon:'📣',title:'Kampanya Yönetimi',desc:'360° kampanya planlama.'},{icon:'🖨️',title:'Matbu Hizmetler',desc:'Her türlü baskı hizmeti.'}]}
+  ],
+  referanslar:[
+    {id:'r1',name:'Türk Telekom',sector:'Teknoloji & Telekomünikasyon'},
+    {id:'r2',name:'Ankara Büyükşehir Belediyesi',sector:'Kamu & Yerel Yönetim'},
+    {id:'r3',name:'Ziraat Bankası',sector:'Finans & Bankacılık'},
+    {id:'r4',name:'THY Teknik',sector:'Havacılık & Lojistik'},
+    {id:'r5',name:'Anadolu Ajansı',sector:'Medya & Haber'},
+    {id:'r6',name:'Rixos Hotels',sector:'Turizm & Otelcilik'},
+    {id:'r7',name:'Roketsan',sector:'Savunma & Teknoloji'},
+    {id:'r8',name:'Türkiye Sigorta',sector:'Sigorta & Finans'},
+    {id:'r9',name:'Kalyon Holding',sector:'İnşaat & Enerji'},
+    {id:'r10',name:'Kızılay',sector:'Sivil Toplum & İnsani Yardım'},
+    {id:'r11',name:'Turkcell',sector:'Teknoloji & İletişim'},
+    {id:'r12',name:'Ankara Üniversitesi',sector:'Eğitim & Akademi'}
+  ],
+  iletisim:{stag:'İletişim',sh:'Hadi Birlikte Başaralım.',sp:'Markanız için etkili çözümler üretmeye hazırız.',telVal:'+90 545 552 53 24',telHref:'+905455525324',email:'iletisim@rumedya.com.tr',adres1:'Emniyet Mahallesi, Hipodrom Caddesi',adres2:'No:9/17 İç Kapı: 98',adres3:'M3 Blok — Yenimahalle, Ankara'},
+  sosyal:{ig:'https://instagram.com/rumedya',igVal:'@rumedya',tw:'https://twitter.com/MedyaRu',twVal:'@MedyaRu',fb:'https://facebook.com/profile.php?id=61561618331158',fbVal:'Ru Medya',li:'',yt:''},
+  footer:{brand:'RU MEDYA',tagline:'Hayalden Gerçeğe.',copy:'© 2025 Ru Medya. Tüm hakları saklıdır.',konum:'Yenimahalle, Ankara'}
+};
+
+const uid=()=>'R'+Date.now().toString(36).slice(-5).toUpperCase();
+
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.sb-nav a').forEach(a=>a.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  document.getElementById('nav-'+id).classList.add('active');
+  renderPage(id);
+}
+function renderPage(id){
+  const fns={hero:fillHero,hakkimizda:fillHakkimizda,stats:fillStats,hizmetler:renderHizmetler,referanslar:renderReferanslar,iletisim:fillIletisim,sosyal:fillSosyal,footer:fillFooter,ozet:fillOzet};
+  if(fns[id]) fns[id]();
+}
+
+function fillOzet(){
+  document.getElementById('oz-refs').textContent=S.referanslar.length;
+  document.getElementById('oz-musteri').textContent=S.stats.v1+'+';
+  document.getElementById('oz-proje').textContent=S.stats.v2+'+';
+}
+
+function v(id){return document.getElementById(id);}
+
+// HERO
+function fillHero(){const h=S.hero;v('h-line1').value=h.line1||'';v('h-line2').value=h.line2||'';v('h-sub').value=h.sub||'';v('h-btn1').value=h.btn1||'';v('h-btn1-href').value=h.btn1href||'';v('h-btn2').value=h.btn2||'';v('h-btn2-href').value=h.btn2href||'';v('h-eyebrow').value=h.eyebrow||'';v('h-scroll').value=h.scroll||'';}
+async function saveHero(){S.hero={line1:v('h-line1').value,line2:v('h-line2').value,sub:v('h-sub').value,btn1:v('h-btn1').value,btn1href:v('h-btn1-href').value,btn2:v('h-btn2').value,btn2href:v('h-btn2-href').value,eyebrow:v('h-eyebrow').value,scroll:v('h-scroll').value};await DB.set('ru_hero',S.hero);toast('Hero kaydedildi ✓');}
+
+// HAKKIMIZDA
+function fillHakkimizda(){const h=S.hakkimizda;v('hk-stag').value=h.stag||'';v('hk-sh').value=h.sh||'';v('hk-sp').value=h.sp||'';v('hk-quote').value=h.quote||'';v('hk-sektor').value=h.sektor||'';v('hk-hizmet').value=h.hizmet||'';v('hk-ekip').value=h.ekip||'';v('hk-web').value=h.web||'';}
+async function saveHakkimizda(){S.hakkimizda={stag:v('hk-stag').value,sh:v('hk-sh').value,sp:v('hk-sp').value,quote:v('hk-quote').value,sektor:v('hk-sektor').value,hizmet:v('hk-hizmet').value,ekip:v('hk-ekip').value,web:v('hk-web').value};await DB.set('ru_hakkimizda',S.hakkimizda);toast('Hakkımızda kaydedildi ✓');}
+
+// STATS
+function fillStats(){const s=S.stats;v('s-v1').value=s.v1||'';v('s-l1').value=s.l1||'';v('s-v2').value=s.v2||'';v('s-l2').value=s.l2||'';v('s-v3').value=s.v3||'';v('s-l3').value=s.l3||'';v('s-marquee').value=s.marquee||'';}
+async function saveStats(){S.stats={v1:+v('s-v1').value,l1:v('s-l1').value,v2:+v('s-v2').value,l2:v('s-l2').value,v3:+v('s-v3').value,l3:v('s-l3').value,marquee:v('s-marquee').value};await DB.set('ru_stats',S.stats);toast('İstatistikler kaydedildi ✓');}
+
+// HİZMETLER
+function renderHizmetler(){
+  document.getElementById('hizmet-list').innerHTML=S.hizmetler.map((h,hi)=>`
+    <div class="acc-editor">
+      <div class="acc-editor-head" onclick="toggleAcc(this)">
+        <span class="acc-editor-title">0${hi+1} — ${h.title}</span>
+        <span style="color:var(--muted)">▼</span>
+      </div>
+      <div class="acc-editor-body">
+        <div class="form-grid" style="margin-bottom:1rem;">
+          <div class="form-group"><label>Kategori Adı</label><input value="${h.title}" oninput="S.hizmetler[${hi}].title=this.value;this.closest('.acc-editor').querySelector('.acc-editor-title').textContent='0${hi+1} — '+this.value"></div>
+          <div class="form-group full"><label>Giriş Paragrafı</label><textarea oninput="S.hizmetler[${hi}].pitch=this.value">${h.pitch}</textarea></div>
+        </div>
+        <div style="font-size:.75rem;font-weight:600;color:var(--gold);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.8rem;">Alt Hizmetler</div>
+        ${h.subhizmetler.map((s,si)=>`
+          <div class="subcard">
+            <div class="subcard-header"><span class="subcard-title">${s.icon} Alt Hizmet ${si+1}</span><button class="btn btn-danger btn-sm" onclick="removeSubhizmet(${hi},${si})">Sil</button></div>
+            <div class="form-grid">
+              <div class="form-group"><label>İkon</label><input value="${s.icon}" oninput="S.hizmetler[${hi}].subhizmetler[${si}].icon=this.value" style="font-size:1.1rem;"></div>
+              <div class="form-group"><label>Başlık</label><input value="${s.title}" oninput="S.hizmetler[${hi}].subhizmetler[${si}].title=this.value"></div>
+              <div class="form-group full"><label>Açıklama</label><textarea oninput="S.hizmetler[${hi}].subhizmetler[${si}].desc=this.value">${s.desc}</textarea></div>
+            </div>
+          </div>`).join('')}
+        <button class="btn btn-ghost btn-sm" onclick="addSubhizmet(${hi})" style="margin-top:.5rem;">+ Alt Hizmet Ekle</button>
+      </div>
+    </div>`).join('');
+}
+function toggleAcc(head){head.nextElementSibling.classList.toggle('open');}
+function removeSubhizmet(hi,si){S.hizmetler[hi].subhizmetler.splice(si,1);renderHizmetler();}
+function addSubhizmet(hi){S.hizmetler[hi].subhizmetler.push({icon:'✨',title:'Yeni Hizmet',desc:'Açıklama'});renderHizmetler();document.querySelectorAll('.acc-editor-body')[hi].classList.add('open');}
+async function saveHizmetler(){await DB.set('ru_hizmetler',S.hizmetler);toast('Hizmetler kaydedildi ✓');}
+
+// REFERANSLAR
+function renderReferanslar(){
+  const el=document.getElementById('ref-list');
+  if(!S.referanslar.length){el.innerHTML='<p style="color:var(--muted);font-size:.82rem;">Henüz referans yok.</p>';return;}
+  el.innerHTML=S.referanslar.map((r,i)=>`
+    <div class="list-item">
+      <div class="list-item-info"><div class="list-item-title">${r.name}</div><div class="list-item-sub">${r.sector}</div></div>
+      <div class="list-item-actions">
+        <button class="btn btn-ghost btn-sm" onclick="editRef(${i})">Düzenle</button>
+        <button class="btn btn-danger btn-sm" onclick="removeRef(${i})">Sil</button>
+      </div>
+    </div>`).join('');
+}
+function addRef(){const name=v('ref-name-new').value.trim(),sector=v('ref-sector-new').value.trim();if(!name)return toast('Ad boş olamaz',true);S.referanslar.push({id:uid(),name,sector});v('ref-name-new').value='';v('ref-sector-new').value='';renderReferanslar();toast('Referans eklendi');}
+function removeRef(i){S.referanslar.splice(i,1);renderReferanslar();}
+function editRef(i){const r=S.referanslar[i];openModal('Referans Düzenle',`<div class="form-group" style="margin-bottom:.8rem;"><label>Şirket Adı</label><input id="er-name" value="${r.name}"></div><div class="form-group"><label>Sektör</label><input id="er-sector" value="${r.sector}"></div>`,()=>{S.referanslar[i].name=v('er-name').value;S.referanslar[i].sector=v('er-sector').value;renderReferanslar();closeModal();});}
+async function saveReferanslar(){await DB.set('ru_referanslar',S.referanslar);toast('Referanslar kaydedildi ✓');fillOzet();}
+
+// İLETİŞİM
+function fillIletisim(){const il=S.iletisim;v('il-stag').value=il.stag||'';v('il-sh').value=il.sh||'';v('il-sp').value=il.sp||'';v('il-tel-val').value=il.telVal||'';v('il-tel-href').value=il.telHref||'';v('il-email').value=il.email||'';v('il-adres1').value=il.adres1||'';v('il-adres2').value=il.adres2||'';v('il-adres3').value=il.adres3||'';}
+async function saveIletisim(){S.iletisim={stag:v('il-stag').value,sh:v('il-sh').value,sp:v('il-sp').value,telVal:v('il-tel-val').value,telHref:v('il-tel-href').value,email:v('il-email').value,adres1:v('il-adres1').value,adres2:v('il-adres2').value,adres3:v('il-adres3').value};await DB.set('ru_iletisim',S.iletisim);toast('İletişim kaydedildi ✓');}
+
+// SOSYAL
+function fillSosyal(){const s=S.sosyal;v('soc-ig').value=s.ig||'';v('soc-ig-val').value=s.igVal||'';v('soc-tw').value=s.tw||'';v('soc-tw-val').value=s.twVal||'';v('soc-fb').value=s.fb||'';v('soc-fb-val').value=s.fbVal||'';v('soc-li').value=s.li||'';v('soc-yt').value=s.yt||'';}
+async function saveSosyal(){S.sosyal={ig:v('soc-ig').value,igVal:v('soc-ig-val').value,tw:v('soc-tw').value,twVal:v('soc-tw-val').value,fb:v('soc-fb').value,fbVal:v('soc-fb-val').value,li:v('soc-li').value,yt:v('soc-yt').value};await DB.set('ru_sosyal',S.sosyal);toast('Sosyal medya kaydedildi ✓');}
+
+// FOOTER
+function fillFooter(){const f=S.footer;v('ft-brand').value=f.brand||'';v('ft-tagline').value=f.tagline||'';v('ft-copy').value=f.copy||'';v('ft-konum').value=f.konum||'';}
+async function saveFooter(){S.footer={brand:v('ft-brand').value,tagline:v('ft-tagline').value,copy:v('ft-copy').value,konum:v('ft-konum').value};await DB.set('ru_footer',S.footer);toast('Footer kaydedildi ✓');}
+
+// MODAL
+function openModal(title,body,onSave){v('modal-title').textContent=title;v('modal-body').innerHTML=body;v('modal-save-btn').onclick=onSave;v('modal').classList.add('open');}
+function closeModal(){v('modal').classList.remove('open');}
+
+// TOAST
+function toast(msg,err=false){const el=v('toast');el.textContent=msg;el.className='toast'+(err?' error':'');el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2800);}
+
+// INIT
+async function init(){
+  document.getElementById('db-bar').style.display='block';
+  const keys=['ru_hero','ru_hakkimizda','ru_stats','ru_hizmetler','ru_referanslar','ru_iletisim','ru_sosyal','ru_footer'];
+  const map={ru_hero:'hero',ru_hakkimizda:'hakkimizda',ru_stats:'stats',ru_hizmetler:'hizmetler',ru_referanslar:'referanslar',ru_iletisim:'iletisim',ru_sosyal:'sosyal',ru_footer:'footer'};
+  try{const results=await Promise.all(keys.map(k=>DB.get(k)));keys.forEach((k,i)=>{if(results[i])S[map[k]]=results[i];});}catch(e){}
+  document.getElementById('db-bar').style.display='none';
+  fillOzet();
+}
+init();
+</script>
+</body>
+</html>
