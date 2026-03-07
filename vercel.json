@@ -1,0 +1,11 @@
+{
+  "redirects": [
+    { "source": "/contact", "destination": "/#contact", "permanent": true },
+    { "source": "/hizmetlerimiz/:path*", "destination": "/#services", "permanent": true },
+    { "source": "/hizmetler/:path*", "destination": "/#services", "permanent": true },
+    { "source": "/hakkimizda", "destination": "/#about", "permanent": true },
+    { "source": "/about", "destination": "/#about", "permanent": true },
+    { "source": "/referanslar", "destination": "/#numbers", "permanent": true },
+    { "source": "/iletisim", "destination": "/#contact", "permanent": true }
+  ]
+}
